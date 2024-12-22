@@ -1,40 +1,60 @@
-import  { useEffect, useState } from 'react'
+"use client";
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
-interface ITodo {
-    userId: number;
-    id: number;
-    title: string;
-    completed: boolean;
-  }
+// Define the type for a product
+type Product = {
+  id: number;
+  title: string;
+  category: string;
+  price: number;
+  images: string[];
+};
 
-const clientside = () => {
+const Page = () => {
+  const [product, setProduct] = useState<Product[]>([]);
 
-    const [data, setData] = useState<ITodo[]>([]);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const data = await fetch("https://dummyjson.com/products");
+      const result = await data.json();
+      console.log(result);
+      setProduct(result.products);
+    };
 
-    useEffect(() => {
-      const fetchData = async () => {
-        const response = await fetch(
-          "https://jsonplaceholder.typicode.com/todos"
-        );
-        const parsedResponse: ITodo[] = await response.json();
-        console.log("todos >>>", parsedResponse);
-        setData(parsedResponse);
-      };
-      fetchData();
-    },[]);
+    fetchProducts();
+  }, []);
 
   return (
-    <div>
-     {data.map((todo, index) => (
-        <div key={index} className="flex flex-col gap-5 border border-black ">
-          <p>userId: {todo.userId}</p>
-          <p>id: {todo.id}</p>
-          <p>title: {todo.title}</p>
-          <p>completed: {`${todo.completed}`}</p>
-        </div>
-      ))}  
+    <div className="flex flex-col items-center p-8">
+      <h1 className="text-[28px] font-bold relative inline-block">
+        Client Side Product List
+        <span className="absolute left-0 bottom-0 w-full h-[2px] bg-white"></span>
+      </h1>
+      <div className="m-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {product.map((item) => (
+          <div
+            className="border-2 border-black rounded-2xl p-8 bg-white text-black"
+            key={item.id}
+          >
+            {item.images.slice(0, 1).map((img, index) => (
+              <Image
+                key={index}
+                src={img}
+                alt={`${item.title} - Image ${index + 1}`}
+                width={150}
+                height={150}
+                className="w-[150px] h-[150px] object-cover mb-4 mx-auto"
+              />
+            ))}
+            <h3 className="text-lg font-semibold text-center">{item.title}</h3>
+            <p className="text-sm text-center"><span className='text-gray-500'>Category : </span>{item.category}</p>
+            <p className="text-sm font-bold text-gray-600 hover:text-orange-500 text-center">${item.price}</p>
+          </div>
+        ))}
+      </div>
     </div>
-  )
+  );
 }
 
-export default clientside
+export default Page;
